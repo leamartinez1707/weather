@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import { WeatherCard } from './Components/WeatherCard/WeatherCard';
+import Loader from './Components/Loader/Loader'
 
 function App() {
 
@@ -11,6 +12,38 @@ function App() {
   const [responseText, setResponseText] = useState('')
   const apiKey = import.meta.env.VITE_API_KEY;
   const date = new Date().toDateString()
+
+  const options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0,
+  };
+
+  async function success(pos) {
+    setLoading(true)
+    const crd = pos.coords;
+    setTimeout(async () => {
+
+      const myLocation = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${crd.latitude}&lon=${crd.longitude}&units=metric&lang=es&appid=${apiKey}`)
+      if (!myLocation.ok) {
+        setLoading(false)
+        return;
+      }
+      const data = await myLocation.json()
+      setGeoData(data)
+      setCountry(data.sys.country)
+      setLoading(false)
+    }, 2000);
+  }
+
+  function error(err) {
+    alert(`ERROR(${err.code}): ${err.message}`);
+  }
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(success, error, options);
+
+  }, [])
+
 
   const searchCity = () => {
     try {
@@ -35,11 +68,9 @@ function App() {
     }
   }
   return (
-
-    // <div class="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div>
     <>
       <div className='flex flex-col items-center min-h-screen align-middle justify-center font-mono'>
-        <h1 className='text-gray-50 text-center text-xl sm:text-2xl m-4 font-semibold'>Consulta el clima en tu ciudad deseada</h1>
+        <h1 className='text-gray-50 text-center text-xl sm:text-2xl m-4 font-semibold'>Consulta el clima de tu ciudad deseada</h1>
         <div className='flex p-2 border border-gray-300 rounded-xl bg-white'>
           <input
             onKeyDown={(event) => {
@@ -52,7 +83,7 @@ function App() {
         {geoData && <WeatherCard geoData={geoData} country={country} date={date} />
         }
         {responseText === 'Not Found' && !loading && <h1 className='text-red-600 font-bold my-4 text-lg'>Ciudad no encontrada</h1>}
-        {loading ? <svg xmlns="http://www.w3.org/2000/svg" className='size-10 m-4' viewBox="0 0 24 24"><rect width="10" height="10" x="1" y="1" fill="currentColor" rx="1"><animate id="svgSpinnersBlocksShuffle20" fill="freeze" attributeName="x" begin="0;svgSpinnersBlocksShuffle27.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle21" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle24.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle22" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle25.end" dur="0.2s" values="13;1" /><animate id="svgSpinnersBlocksShuffle23" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle26.end" dur="0.2s" values="13;1" /></rect><rect width="10" height="10" x="1" y="13" fill="currentColor" rx="1"><animate id="svgSpinnersBlocksShuffle24" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle20.end" dur="0.2s" values="13;1" /><animate id="svgSpinnersBlocksShuffle25" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle21.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle26" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle22.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle27" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle23.end" dur="0.2s" values="13;1" /></rect></svg> : null}
+        {loading ? <Loader /> : null}
       </div >
     </>
   )
