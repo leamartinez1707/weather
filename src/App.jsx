@@ -31,6 +31,7 @@ function App() {
       }
       const data = await myLocation.json()
       setGeoData(data)
+      console.log(data)
       setCountry(data.sys.country)
       setLoading(false)
     }, 2000);

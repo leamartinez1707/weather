@@ -8,16 +8,16 @@ export const WeatherCard = ({ geoData, country, date }) => {
                     <img className='size-20 rounded-full p-0 bg-sky-300' src={`https://openweathermap.org/img/wn/${geoData.weather[0].icon}.png`} alt="Weather Icon" />
                 </div>
                 <div className="flex flex-row items-center justify-center mt-6">
-                    <div className="font-medium text-3xl sm:text-5xl">{geoData.main.temp}°C</div>
+                    <div className="font-medium text-3xl sm:text-5xl">{Math.round(geoData.main.temp)}°C</div>
                     <div className="flex flex-col items-center ml-6">
                         <div className='font-bold text-sm'>{geoData.weather[0].description.toLocaleUpperCase()}</div>
                         <div className="mt-1">
                             <span className="text-sm"><i className="far fa-long-arrow-up"></i></span>
-                            <span className="text-sm font-light text-gray-800">Max: {geoData.main.temp_max}°C</span>
+                            <span className="text-sm font-light text-gray-800">Max: {Math.round(geoData.main.temp_max)}°C</span>
                         </div>
                         <div>
                             <span className="text-sm"><i className="far fa-long-arrow-down"></i></span>
-                            <span className="text-sm font-light text-gray-800">Min: {geoData.main.temp_min}°C</span>
+                            <span className="text-sm font-light text-gray-800">Min: {Math.round(geoData.main.temp_min)}°C</span>
                         </div>
                     </div>
                 </div>
