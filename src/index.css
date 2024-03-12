@@ -7,3 +7,7 @@
     margin: 0;
     padding: 0;
 }
+
+body {
+    background: linear-gradient(to bottom, #87e0fd 0%, #53cbf1 40%, #05abe0 100%);
+}

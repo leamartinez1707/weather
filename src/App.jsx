@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
-import './App.css'
+import { WeatherCard } from './Components/WeatherCard/WeatherCard';
 
 function App() {
 
@@ -8,122 +8,54 @@ function App() {
   const [geoData, setGeoData] = useState()
   const [country, setCountry] = useState('')
   const [loading, setLoading] = useState(false)
+  const [responseText, setResponseText] = useState('')
   const apiKey = import.meta.env.VITE_API_KEY;
   const date = new Date().toDateString()
+
   const searchCity = () => {
     try {
+      if (!city) return;
+      setGeoData()
       setLoading(true)
       setTimeout(async () => {
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&limit=5&units=metric&lang=es&appid=${apiKey}`)
-        if (!response.ok) throw new Error('Fetch network error');
+        if (!response.ok) {
+          setResponseText(response.statusText)
+          setLoading(false)
+          return;
+        }
         const data = await response.json()
-        console.log(data)
+        setResponseText(response.statusText)
         setGeoData(data)
         setCountry(data.sys.country)
         setLoading(false)
       }, 2000);
-
     } catch (err) {
       throw new Error('Try catch Error')
     }
-
   }
-
   return (
+
+    // <div class="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div>
     <>
-      <div className='flex flex-col'>
-        <div className='p-6'>
-          <label className='font-bold' htmlFor="textCity">Ingrese la ciudad </label>
-          <input autoFocus onChange={(e) => setCity(e.target.value)} maxLength={30} className='border border-black p-2 m-4' id='textCity' type="text" />
-          <button onClick={searchCity}>Ver clima</button>
+      <div className='flex flex-col items-center min-h-screen align-middle justify-center font-mono'>
+        <h1 className='text-gray-50 text-center text-xl sm:text-2xl m-4 font-semibold'>Consulta el clima en tu ciudad deseada</h1>
+        <div className='flex p-2 border border-gray-300 rounded-xl bg-white'>
+          <input
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                searchCity();
+              }
+            }} autoFocus onChange={(e) => setCity(e.target.value)} maxLength={20} placeholder='Ej: Montevideo' className='p-2 outline-none text-xl' id='textCity' type="text" />
+          <button className='bg-white font-semibold bg-[url(https://svgsilh.com/svg_v2/297822.svg)]' onClick={searchCity} ><img className='size-8 justify-center align-middle' src="https://svgsilh.com/svg_v2/297822.svg" alt="" /></button>
         </div>
-        {geoData &&
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs">
-              <div className="font-bold text-xl">{geoData.name} <span className={`fi fi-${country.toLowerCase()}`}></span></div>
-              <div className="text-sm text-gray-500">{date.toLocaleUpperCase()}</div>
-              <div className="mt-6 text-6xl self-center inline-flex items-center justify-center rounded-lg text-indigo-400 h-24 w-24">
-                <img className='size-20 bg-gray-300 rounded-full' src={`https://openweathermap.org/img/wn/${geoData.weather[0].icon}.png`} alt="Weather Icon" />
-              </div>
-              <div className="flex flex-row items-center justify-center mt-6">
-                <div className="font-medium text-6xl">{geoData.main.temp}</div>
-                <div className="flex flex-col items-center ml-6">
-                  <div>{geoData.weather[0].description}</div>
-                  <div className="mt-1">
-                    <span className="text-sm"><i className="far fa-long-arrow-up"></i></span>
-                    <span className="text-sm font-light text-gray-500">28°C</span>
-                  </div>
-                  <div>
-                    <span className="text-sm"><i className="far fa-long-arrow-down"></i></span>
-                    <span className="text-sm font-light text-gray-500">20°C</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-row justify-between mt-6">
-                <div className="flex flex-col items-center">
-                  <div className="font-medium text-sm">Wind</div>
-                  <div className="text-sm text-gray-500">{geoData.wind.speed}m/s</div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="font-medium text-sm">Humidity</div>
-                  <div className="text-sm text-gray-500">68%</div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="font-medium text-sm">Visibility</div>
-                  <div className="text-sm text-gray-500">10km</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        {geoData && <WeatherCard geoData={geoData} country={country} date={date} />
         }
-        {loading ? <button type="button" className="bg-indigo-500 ..." disabled>
-          <svg className="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24">
-
-          </svg>
-          Processing...
-        </button> : null}
-      </div>
+        {responseText === 'Not Found' && !loading && <h1 className='text-red-600 font-bold my-4 text-lg'>Ciudad no encontrada</h1>}
+        {loading ? <svg xmlns="http://www.w3.org/2000/svg" className='size-10 m-4' viewBox="0 0 24 24"><rect width="10" height="10" x="1" y="1" fill="currentColor" rx="1"><animate id="svgSpinnersBlocksShuffle20" fill="freeze" attributeName="x" begin="0;svgSpinnersBlocksShuffle27.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle21" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle24.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle22" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle25.end" dur="0.2s" values="13;1" /><animate id="svgSpinnersBlocksShuffle23" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle26.end" dur="0.2s" values="13;1" /></rect><rect width="10" height="10" x="1" y="13" fill="currentColor" rx="1"><animate id="svgSpinnersBlocksShuffle24" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle20.end" dur="0.2s" values="13;1" /><animate id="svgSpinnersBlocksShuffle25" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle21.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle26" fill="freeze" attributeName="y" begin="svgSpinnersBlocksShuffle22.end" dur="0.2s" values="1;13" /><animate id="svgSpinnersBlocksShuffle27" fill="freeze" attributeName="x" begin="svgSpinnersBlocksShuffle23.end" dur="0.2s" values="13;1" /></rect></svg> : null}
+      </div >
     </>
   )
 }
 
 export default App
-
-  // < div className = "min-h-screen flex items-center justify-center" >
-  //   <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs">
-  //     <div className="font-bold text-xl">{geoData.name} <span className={`fi fi-${country.toLowerCase()}`}></span></div>
-  //     <div className="text-sm text-gray-500">Thursday 10 May 2020</div>
-  //     <div className="mt-6 text-6xl self-center inline-flex items-center justify-center rounded-lg text-indigo-400 h-24 w-24">
-  //       <img className='size-32 bg-red-500 rounded-full' src={`https://openweathermap.org/img/wn/${geoData.weather[0].icon}.png`} alt="Weather Icon" />
-  //     </div>
-  //     <div className="flex flex-row items-center justify-center mt-6">
-  //       <div className="font-medium text-6xl">{geoData.main.temp}</div>
-  //       <div className="flex flex-col items-center ml-6">
-  //         <div>{geoData.weather[0].description}</div>
-  //         <div className="mt-1">
-  //           <span className="text-sm"><i className="far fa-long-arrow-up"></i></span>
-  //           <span className="text-sm font-light text-gray-500">28°C</span>
-  //         </div>
-  //         <div>
-  //           <span className="text-sm"><i className="far fa-long-arrow-down"></i></span>
-  //           <span className="text-sm font-light text-gray-500">20°C</span>
-  //         </div>
-  //       </div>
-  //     </div>
-  //     <div className="flex flex-row justify-between mt-6">
-  //       <div className="flex flex-col items-center">
-  //         <div className="font-medium text-sm">Wind</div>
-  //         <div className="text-sm text-gray-500">9k/h</div>
-  //       </div>
-  //       <div className="flex flex-col items-center">
-  //         <div className="font-medium text-sm">Humidity</div>
-  //         <div className="text-sm text-gray-500">68%</div>
-  //       </div>
-  //       <div className="flex flex-col items-center">
-  //         <div className="font-medium text-sm">Visibility</div>
-  //         <div className="text-sm text-gray-500">10km</div>
-  //       </div>
-  //     </div>
-  //   </div>
-  //     </div >
